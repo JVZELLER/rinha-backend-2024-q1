@@ -1,0 +1,12 @@
+defmodule RinhaBackend.Repo.Migrations.CreateClientsTable do
+  use Ecto.Migration
+
+  def change do
+    create table("clients") do
+      add(:balance, :bigint)
+      add(:limit, :bigint)
+
+      timestamps(type: :utc_datetime_usec)
+    end
+  end
+end
