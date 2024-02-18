@@ -5,7 +5,8 @@ defmodule RinhaBackend.Schemas.Entry do
   defstruct ~w(id amount type description client_id inserted_at)a
 
   defguard valid_type(t) when t in ~w(c d C D)
-  defguard valid_description(description) when length(description) <= 10 and description != ""
+
+  defguard valid_description(description) when byte_size(description) <= 10 and description != ""
 
   @type t :: %__MODULE__{
           id: integer(),
@@ -22,7 +23,9 @@ defmodule RinhaBackend.Schemas.Entry do
              valid_type(type) and
              valid_description(desc) and
              is_integer(client_id) do
-    struct(__MODULE__, params)
+    amount = if(type == "d", do: -amount, else: amount)
+
+    struct(__MODULE__, %{params | amount: amount})
   end
 
   def new(_invalid), do: {:error, :invalid_args}
