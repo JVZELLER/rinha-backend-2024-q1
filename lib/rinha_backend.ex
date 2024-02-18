@@ -1,18 +1,5 @@
 defmodule RinhaBackend do
   @moduledoc """
-  Documentation for `RinhaBackend`.
+  Domain module for the RinhaBackend application
   """
-
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> RinhaBackend.hello()
-      :world
-
-  """
-  def hello do
-    :world
-  end
 end
