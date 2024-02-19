@@ -18,18 +18,18 @@ defmodule Commands.CreateEntryTest do
     end
 
     test "should create entry successfully", ctx do
-      assert CreateEntry.execute(1, ctx.debit) == {:ok, %{"balance" => -1, "limit" => 10}}
-      assert CreateEntry.execute(1, ctx.credit) == {:ok, %{"balance" => 0, "limit" => 10}}
+      assert CreateEntry.execute(ctx.debit) == {:ok, %{"balance" => -1, "limit" => 10}}
+      assert CreateEntry.execute(ctx.credit) == {:ok, %{"balance" => 0, "limit" => 10}}
     end
 
     test "should return error when client does not exists", ctx do
-      assert CreateEntry.execute(2, ctx.debit) == {:error, :client_not_found}
+      assert CreateEntry.execute(%{ctx.debit | client_id: 123}) == {:error, :client_not_found}
     end
 
     test "should return error when entry amount exceeds client's limit", ctx do
-      entry = %{ctx.debit | amount: 11}
+      entry = %{ctx.debit | amount: -11}
 
-      assert CreateEntry.execute(2, entry) == {:error, :client_not_found}
+      assert CreateEntry.execute(entry) == {:error, :entry_amount_exceeds_client_limit}
     end
   end
 end
