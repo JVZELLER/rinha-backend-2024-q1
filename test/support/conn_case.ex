@@ -1,4 +1,4 @@
-defmodule RinhaBackend.DataCase do
+defmodule RinhaBackend.ConnCase do
   @moduledoc """
   This module defines the setup for tests requiring
   access to the application's data layer.
@@ -20,12 +20,15 @@ defmodule RinhaBackend.DataCase do
 
   using do
     quote do
+      use Plug.Test
+
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
-      import RinhaBackend.DataCase
+      import RinhaBackend.ConnCase
       import RinhaBackend.Factory
 
+      alias RinhaBackendWeb.Endpoint
       alias RinhaBackend.Repo
     end
   end

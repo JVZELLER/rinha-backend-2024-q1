@@ -22,6 +22,7 @@ defmodule RinhaBackend.Schemas.Entry do
   @spec new(map()) :: {:ok, t()} | {:error, :invalid_args}
   def new(%{amount: amount, type: type, description: desc, client_id: client_id} = params)
       when is_integer(amount) and
+             amount > 0 and
              valid_type(type) and
              valid_description(desc) and
              is_integer(client_id) do

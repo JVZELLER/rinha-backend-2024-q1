@@ -6,15 +6,14 @@ defmodule Commands.CreateEntryTest do
 
   describe "execute/1" do
     setup do
-      now = NaiveDateTime.utc_now()
+      client_id = insert!(:client)
 
-      Repo.insert_all("clients", [
-        [id: 1, balance: 0, limit: 10, inserted_at: now, updated_at: now]
-      ])
+      base = %{amount: 1, type: "c", description: "Elixir", client_id: client_id}
 
-      base = %{amount: 1, type: "c", description: "Elixir", client_id: 1}
+      {:ok, debit} = Entry.new(%{base | type: "d"})
+      {:ok, credit} = Entry.new(base)
 
-      {:ok, debit: Entry.new(%{base | type: "d"}), credit: Entry.new(base)}
+      {:ok, debit: debit, credit: credit}
     end
 
     test "should create entry successfully", ctx do
