@@ -26,6 +26,9 @@ defmodule RinhaBackendWeb.Controller.ClientController do
       |> Conn.put_resp_content_type("application/json")
       |> then(&Conn.send_resp(&1, 200, render(:show, result)))
     else
+      {:client_id, :error} ->
+        Conn.send_resp(conn, 400, "invalid_path_parametr")
+
       {:error, :invalid_args} ->
         Conn.send_resp(conn, 400, "invalid_args")
 

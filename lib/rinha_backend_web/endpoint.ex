@@ -1,6 +1,6 @@
-defmodule RinhaBackendWeb.HTTPServer do
+defmodule RinhaBackendWeb.Endpoint do
   @moduledoc """
-  The application web server
+  A plug responsible for parsing request body's as JSON, matching routes, and dispatching responses.
   """
   use Plug.Router
 
