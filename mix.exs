@@ -36,9 +36,16 @@ defmodule RinhaBackend.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      # Database
       {:ecto_sql, "~> 3.0"},
+      {:postgrex, ">= 0.0.0"},
+
+      # JSON parser
       {:jason, "~> 1.4.1"},
-      {:postgrex, ">= 0.0.0"}
+
+      # Web Server
+      {:plug_cowboy, "~> 2.0"},
+      {:bandit, "~> 1.0"}
     ]
   end
 end

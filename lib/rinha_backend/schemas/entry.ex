@@ -8,6 +8,8 @@ defmodule RinhaBackend.Schemas.Entry do
 
   defguard valid_description(description) when byte_size(description) <= 10 and description != ""
 
+  @valid_fields ~w(id amount type description client_id inserted_at)a
+
   @type t :: %__MODULE__{
           id: integer(),
           amount: integer(),
@@ -17,7 +19,7 @@ defmodule RinhaBackend.Schemas.Entry do
           inserted_at: NaiveDateTime.t()
         }
 
-  @spec new(map()) :: t() | {:error, :invalid_args}
+  @spec new(map()) :: {:ok, t()} | {:error, :invalid_args}
   def new(%{amount: amount, type: type, description: desc, client_id: client_id} = params)
       when is_integer(amount) and
              valid_type(type) and
@@ -25,7 +27,10 @@ defmodule RinhaBackend.Schemas.Entry do
              is_integer(client_id) do
     amount = if(type == "d", do: -amount, else: amount)
 
-    struct(__MODULE__, %{params | amount: amount})
+    params
+    |> Map.take(@valid_fields)
+    |> then(&struct(__MODULE__, %{&1 | amount: amount}))
+    |> then(&{:ok, &1})
   end
 
   def new(_invalid), do: {:error, :invalid_args}

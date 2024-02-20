@@ -8,7 +8,8 @@ defmodule RinhaBackend.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      RinhaBackend.Repo
+      RinhaBackend.Repo,
+      {Bandit, plug: RinhaBackendWeb.HTTPServer, port: 4000}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
