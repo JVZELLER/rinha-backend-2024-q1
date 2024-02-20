@@ -20,6 +20,10 @@ defmodule RinhaBackendWeb.HTTPServer do
     ClientController.create_entry(conn, Map.put(conn.body_params, "id", id))
   end
 
+  get "/clientes/:id/extrato" do
+    send_resp(conn, 501, "")
+  end
+
   match _ do
     send_resp(conn, 404, "")
   end
