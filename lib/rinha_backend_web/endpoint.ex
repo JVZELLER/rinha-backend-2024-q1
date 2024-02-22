@@ -21,7 +21,7 @@ defmodule RinhaBackendWeb.Endpoint do
   end
 
   get "/clientes/:id/extrato" do
-    send_resp(conn, 501, "")
+    ClientController.statement(conn, Map.put(conn.body_params, "id", id))
   end
 
   match _ do

@@ -3,11 +3,35 @@ defmodule RinhaBackendWeb.JSONView do
   Defines the JSON view for clients resources.
   """
 
-  def render(:show, result) do
+  @spec render!(atom(), map()) :: String.t() | no_return()
+  def render!(:show, %{client: client}) do
     %{
-      limite: result[:limit] || result["limit"],
-      saldo: result[:balance] || result["balance"]
+      limite: client[:limit] || client["limit"],
+      saldo: client[:balance] || client["balance"]
     }
     |> Jason.encode!()
+  end
+
+  def render!(:statement, %{client: client, entries: entries}) do
+    now = NaiveDateTime.utc_now()
+
+    %{
+      saldo: %{
+        total: client.balance,
+        data_extrato: now,
+        limite: client.limit
+      },
+      ultimas_transacoes: Enum.map(entries, &render_statement_entries/1)
+    }
+    |> Jason.encode!()
+  end
+
+  defp render_statement_entries(entry) do
+    %{
+      valor: entry.amount,
+      tipo: entry.type,
+      descricao: entry.description,
+      realizada_em: entry.inserted_at
+    }
   end
 end

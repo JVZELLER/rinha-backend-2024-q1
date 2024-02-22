@@ -11,11 +11,11 @@ defmodule RinhaBackend.Schemas.Entry do
   @valid_fields ~w(id amount type description client_id inserted_at)a
 
   @type t :: %__MODULE__{
-          id: integer(),
+          id: non_neg_integer(),
           amount: integer(),
           type: String.t(),
           description: String.t(),
-          client_id: integer(),
+          client_id: non_neg_integer(),
           inserted_at: NaiveDateTime.t()
         }
 
