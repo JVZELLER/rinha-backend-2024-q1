@@ -15,7 +15,7 @@ defmodule RinhaBackend.Commands.GetClientEntries do
       , inserted_at
     FROM entries
     where client_id = $1
-    order by inserted_at
+    order by inserted_at desc
     limit $2;
     /
     |> Repo.query([client_id, limit])
