@@ -41,8 +41,15 @@ RUN mix compile
 # Changes to config/runtime.exs don't require recompiling the code
 COPY config/runtime.exs config/
 
+# Copies seed file
+COPY priv/repo/seeds.exs .
+
 # Build Release
 RUN mix release --quiet --path release
+
+# Copy release commands
+RUN mkdir -p release/bin/commands
+RUN cp rel/commands/* release/bin/commands
 
 # ---------------------------------------------------------#
 # Run Release                                              #
@@ -73,6 +80,10 @@ RUN chown rinha_backend:rinha_backend /app
 
 # Copy artifact from build
 COPY --from=build --chown=rinha_backend:rinha_backend /app/release ./
+
+# Make release commands available
+RUN chmod u+x /app/bin/commands/*
+ENV PATH=/app/bin/commands:$PATH
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["/app/bin/rinha_backend", "start"]

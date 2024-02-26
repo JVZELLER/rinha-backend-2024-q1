@@ -1,22 +1,43 @@
 version: '3'
 
 services:
- db:
-    image: postgres:latest
-    hostname: db
-    environment:
-      - POSTGRES_PASSWORD=123
-      - POSTGRES_USER=admin
-      - POSTGRES_DB=rinha
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./script.sql:/docker-entrypoint-initdb.d/script.sql
-    # deploy:
-    #   resources:
-    #     limits:
-    #       cpus: "0.13"
-    #       memory: "140MB"
+  api01: &api
+      image: jvzeller/rinha-backend-2024-q1
+      hostname: api01
+      restart: on-failure
+      depends_on:
+        - db
+      ports:
+        - 4000:4000
+      environment:
+        - DATABASE_NAME=rinha
+        - DATABASE_USER=admin
+        - DATABASE_PASS=123
+        - DATABASE_HOST=db
+        - DATABSE_POOL_SIZE=90
+
+  db:
+      image: postgres:latest
+      hostname: db
+      restart: on-failure
+      environment:
+        - POSTGRES_PASSWORD=123
+        - POSTGRES_USER=admin
+        - POSTGRES_DB=rinha
+      ports:
+        - "5432:5432"
+      volumes:
+        - ./sql/ddl.sql:/docker-entrypoint-initdb.d/ddl.sql
+        - ./sql/dml.sql:/docker-entrypoint-initdb.d/dml.sql
+      healthcheck:
+        interval: 5s
+        retries: 5
+        test: pg_isready -U admin -d rinha
+      # deploy:
+      #   resources:
+      #     limits:
+      #       cpus: "0.13"
+      #       memory: "140MB"
 
 networks:
   default:

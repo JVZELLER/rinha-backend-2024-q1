@@ -1,0 +1,11 @@
+#!/bin/sh
+
+case $1 in
+  migrate)
+  echo "Running Migrations"
+  /app/bin/rinha_backend eval "ReleaseTasks.migrate()"
+  ;;
+  *)
+  /app/bin/rinha_backend $@
+  ;;
+esac
