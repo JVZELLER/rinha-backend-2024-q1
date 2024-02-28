@@ -14,10 +14,32 @@ services:
         - DATABASE_USER=admin
         - DATABASE_PASS=123
         - DATABASE_HOST=db
-        - DATABSE_POOL_SIZE=90
+        - DATABSE_POOL_SIZE=100
+    
+  api02:
+    <<: *api
+    hostname: api02
+    ports:
+      - 4001:4000
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api01
+      - api02
+    ports:
+      - "9999:9999"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.17"
+          memory: "10MB"
 
   db:
       image: postgres:latest
+      command: -c 'max_connections=205'
       hostname: db
       restart: on-failure
       environment:
