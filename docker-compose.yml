@@ -15,6 +15,11 @@ services:
         - DATABASE_PASS=123
         - DATABASE_HOST=db
         - DATABSE_POOL_SIZE=100
+      deploy:
+        resources:
+          limits:
+            cpus: "0.6"
+            memory: "100MB"
     
   api02:
     <<: *api
@@ -35,7 +40,7 @@ services:
       resources:
         limits:
           cpus: "0.17"
-          memory: "10MB"
+          memory: "100MB"
 
   db:
       image: postgres:latest
@@ -55,11 +60,11 @@ services:
         interval: 5s
         retries: 5
         test: pg_isready -U admin -d rinha
-      # deploy:
-      #   resources:
-      #     limits:
-      #       cpus: "0.13"
-      #       memory: "140MB"
+      deploy:
+        resources:
+          limits:
+            cpus: "0.13"
+            memory: "250MB"
 
 networks:
   default:
