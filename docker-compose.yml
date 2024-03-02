@@ -6,7 +6,8 @@ services:
       hostname: api01
       restart: on-failure
       depends_on:
-        - db
+        db:
+          condition: service_healthy
       ports:
         - 4000:4000
       environment:
@@ -14,16 +15,30 @@ services:
         - DATABASE_USER=admin
         - DATABASE_PASS=123
         - DATABASE_HOST=db
-        - DATABSE_POOL_SIZE=100
+        - DATABSE_POOL_SIZE=20
+        - ECTO_QUEUE_TARGET=5000
+        - ECTO_QUEUE_INTERVAL=5000
+        - ECTO_REPO_TIMEOUT=30000
+        - APP_INSTANCE=API_01
       deploy:
         resources:
           limits:
-            cpus: "0.6"
+            cpus: "0.55"
             memory: "100MB"
     
   api02:
     <<: *api
     hostname: api02
+    environment:
+        - DATABASE_NAME=rinha
+        - DATABASE_USER=admin
+        - DATABASE_PASS=123
+        - DATABASE_HOST=db
+        - DATABSE_POOL_SIZE=20
+        - ECTO_QUEUE_TARGET=5000
+        - ECTO_QUEUE_INTERVAL=5000
+        - ECTO_REPO_TIMEOUT=30000
+        - APP_INSTANCE=API_02
     ports:
       - 4001:4000
 
@@ -34,19 +49,23 @@ services:
     depends_on:
       - api01
       - api02
+    networks:
+        - default
     ports:
       - "9999:9999"
     deploy:
       resources:
         limits:
-          cpus: "0.17"
-          memory: "100MB"
+          cpus: "0.15"
+          memory: "10MB"
 
   db:
-      image: postgres:latest
-      command: -c 'max_connections=205'
+      image: postgres:16.1-alpine
+      command: -c max_connections=200 -c checkpoint_timeout=600 -c max_wal_size=4096 -c synchronous_commit=0 -c full_page_writes=0
       hostname: db
       restart: on-failure
+      networks:
+        - default
       environment:
         - POSTGRES_PASSWORD=123
         - POSTGRES_USER=admin
@@ -63,8 +82,117 @@ services:
       deploy:
         resources:
           limits:
-            cpus: "0.13"
-            memory: "250MB"
+            cpus: "0.25"
+            memory: "340MB"
+
+
+
+  ## Monitoring stack
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib
+    volumes:
+      - ./observability/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
+    ports:
+      - 1888:1888 # pprof extension
+      - 8888:8888 # Prometheus metrics exposed by the Collector
+      - 8889:8889 # Prometheus exporter metrics
+      - 13133:13133 # health_check extension
+      - 4317:4317 # OTLP gRPC receiver
+      - 4318:4318 # OTLP http receiver
+      - 55679:55679 # zpages extension
+    depends_on:
+      - "mimir-1"
+      - "mimir-2"
+      - "mimir-3"
+    
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  minio:
+    image: minio/minio
+    entrypoint: [""]
+    command: ["sh", "-c", "mkdir -p /data/mimir && minio server --quiet /data"]
+    environment:
+      - MINIO_ROOT_USER=mimir
+      - MINIO_ROOT_PASSWORD=supersecret
+    volumes:
+      - minio-data:/data
+
+  grafana:
+    image: grafana/grafana:latest
+    pull_policy: always
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_SECURITY_ADMIN_PASSWORD=stone
+      # - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
+      - GF_USERS_DEFAULT_THEME=light
+      - GF_LOG_MODE=console
+      - GF_LOG_LEVEL=critical
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./observability/grafana-provisioning-dashboards.yaml:/etc/grafana/provisioning/dashboards/provisioning-dashboards.yaml:ro
+      - ./observability/grafana-provisioning-datasources.yaml:/etc/grafana/provisioning/datasources/provisioning-datasources.yaml:ro
+    ports:
+      - 9000:3000
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  load-balancer:
+    image: nginx:latest
+    volumes:
+      - ./observability/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - "mimir-1"
+      - "mimir-2"
+      - "mimir-3"
+    ports:
+      - 9009:9009
+
+  mimir-1:
+    image: grafana/mimir:latest
+    command: ["-config.file=/etc/mimir.yaml"]
+    hostname: mimir-1
+    depends_on:
+      - minio
+    volumes:
+      - ./observability/mimir.yaml:/etc/mimir.yaml
+      - ./observability/alertmanager-fallback-config.yaml:/etc/alertmanager-fallback-config.yaml
+      - mimir-1-data:/data
+
+  mimir-2:
+    image: grafana/mimir:latest
+    command: ["-config.file=/etc/mimir.yaml"]
+    hostname: mimir-2
+    depends_on:
+      - minio
+    volumes:
+      - ./observability/mimir.yaml:/etc/mimir.yaml
+      - ./observability/alertmanager-fallback-config.yaml:/etc/alertmanager-fallback-config.yaml
+      - mimir-2-data:/data
+
+  mimir-3:
+    image: grafana/mimir:latest
+    command: ["-config.file=/etc/mimir.yaml"]
+    hostname: mimir-3
+    depends_on:
+      - minio
+    volumes:
+      - ./observability/mimir.yaml:/etc/mimir.yaml
+      - ./observability/alertmanager-fallback-config.yaml:/etc/alertmanager-fallback-config.yaml
+      - mimir-3-data:/data
+
+
+volumes:
+  mimir-1-data:
+  mimir-2-data:
+  mimir-3-data:
+  minio-data:
+  grafana-storage:
+
+###### Observability stack
 
 networks:
   default:

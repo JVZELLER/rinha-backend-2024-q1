@@ -13,7 +13,8 @@ defmodule RinhaBackend.Repo.Migrations.CreateEntriesTable do
     end
 
     :entries
-    |> index(:client_id)
+    |> index(~w(client_id inserted_at)a)
+    # |> index(:client_id)
     |> create_if_not_exists()
   end
 end

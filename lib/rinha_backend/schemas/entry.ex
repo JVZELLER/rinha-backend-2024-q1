@@ -15,7 +15,7 @@ defmodule RinhaBackend.Schemas.Entry do
           amount: integer(),
           type: String.t(),
           description: String.t(),
-          client_id: non_neg_integer(),
+          client_id: non_neg_integer() | Strint.t(),
           inserted_at: NaiveDateTime.t()
         }
 
@@ -25,7 +25,7 @@ defmodule RinhaBackend.Schemas.Entry do
              amount > 0 and
              valid_type(type) and
              valid_description(desc) and
-             is_integer(client_id) do
+             (is_integer(client_id) or is_binary(client_id)) do
     amount = if(type == "d", do: -amount, else: amount)
 
     params

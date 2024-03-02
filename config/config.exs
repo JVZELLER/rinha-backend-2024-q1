@@ -7,6 +7,20 @@ config :rinha_backend, RinhaBackend.Repo, parameters: [application_name: "rinha_
 # Configures Elixir's Logger
 config :logger, :console, format: "$time $metadata[$level] $message\n"
 
+#### Observability
+config :rinha_backend, RinhaBackend.PromEx,
+  grafana: [
+    host: "http://grafana:9000",
+    # Or authenticate via API Token
+    auth_token: "API_TOKEN",
+    # This is an optional setting and will default to `true`
+    upload_dashboards_on_start: false,
+    # folder_name: "Rinha",
+    annotate_app_lifecycle: true
+  ]
+
+######
+
 if config_env() != :prod do
   Code.eval_file("runtime_defaults.exs", __DIR__)
   import_config "runtime.exs"

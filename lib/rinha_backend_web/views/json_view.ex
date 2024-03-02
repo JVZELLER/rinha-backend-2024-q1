@@ -28,7 +28,7 @@ defmodule RinhaBackendWeb.JSONView do
 
   defp render_statement_entries(entry) do
     %{
-      valor: entry.amount,
+      valor: abs(entry.amount),
       tipo: entry.type,
       descricao: entry.description,
       realizada_em: entry.inserted_at

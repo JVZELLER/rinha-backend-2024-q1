@@ -11,9 +11,9 @@ defmodule RinhaBackend.Commands.GetClient do
     SELECT balance
       , "limit"
     FROM clients
-    WHERE id = $1;
+    WHERE id = #{client_id};
     /
-    |> Repo.query([client_id])
+    |> Repo.query()
     |> case do
       {:ok, %Postgrex.Result{rows: [_ | _] = rows}} ->
         [balance, limit] = List.flatten(rows)

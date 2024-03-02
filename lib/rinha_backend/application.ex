@@ -8,6 +8,7 @@ defmodule RinhaBackend.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      RinhaBackend.PromEx,
       RinhaBackend.Repo,
       {Bandit, plug: RinhaBackendWeb.Endpoint, port: 4000}
     ]

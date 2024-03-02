@@ -16,7 +16,7 @@ CREATE TABLE "entries" (
     "inserted_at" timestamp NOT NULL,
     PRIMARY KEY ("id")
 );
-CREATE INDEX entries_client_id_index ON public.entries USING btree (client_id);
+CREATE INDEX entries_client_id_inserted_at_index ON public.entries USING btree (client_id, inserted_at);
 CREATE OR REPLACE FUNCTION fn_insert_entry(
         entry_amount bigint,
         entry_type varchar(1),

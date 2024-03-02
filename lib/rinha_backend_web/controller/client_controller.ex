@@ -20,9 +20,9 @@ defmodule RinhaBackendWeb.Controller.ClientController do
       description: params["descricao"] || params[:descricao]
     }
 
-    with {:client_id, {client_id, _}} when client_id > 0 <-
-           {:client_id, Integer.parse(client_id)},
-         translated_params = Map.put(translated_params, :client_id, client_id),
+    # with {:client_id, {client_id, _}} when client_id > 0 <-
+    #        {:client_id, Integer.parse(client_id)},
+    with translated_params = Map.put(translated_params, :client_id, client_id),
          {:ok, entry} <- Entry.new(translated_params),
          {:ok, result} <- CreateEntry.execute(entry) do
       conn
@@ -33,7 +33,7 @@ defmodule RinhaBackendWeb.Controller.ClientController do
         Conn.send_resp(conn, 400, "invalid_path_parameter")
 
       {:error, :invalid_args} ->
-        Conn.send_resp(conn, 400, "invalid_args")
+        Conn.send_resp(conn, 422, "invalid_args")
 
       {:error, :client_not_found} ->
         Conn.send_resp(conn, 404, "")
@@ -45,9 +45,9 @@ defmodule RinhaBackendWeb.Controller.ClientController do
 
   @spec statement(Conn.t(), map()) :: Conn.t()
   def statement(conn, %{"id" => client_id}) do
-    with {:client_id, {client_id, _}} when client_id > 0 <-
-           {:client_id, Integer.parse(client_id)},
-         {:ok, client} <- GetClient.execute(client_id),
+    # with {:client_id, {client_id, _}} when client_id > 0 <-
+    #        {:client_id, Integer.parse(client_id)},
+    with {:ok, client} <- GetClient.execute(client_id),
          {:ok, entries} <- GetClientEntries.execute(client_id) do
       conn
       |> Conn.put_resp_content_type("application/json")

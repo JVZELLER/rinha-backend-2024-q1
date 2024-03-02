@@ -14,11 +14,11 @@ defmodule RinhaBackend.Commands.GetClientEntries do
       , description
       , inserted_at
     FROM entries
-    where client_id = $1
+    where client_id = #{client_id}
     order by inserted_at desc
-    limit $2;
+    limit #{limit};
     /
-    |> Repo.query([client_id, limit])
+    |> Repo.query()
     |> case do
       {:ok, %Postgrex.Result{rows: rows}} ->
         {:ok, render(rows)}

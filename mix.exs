@@ -54,7 +54,11 @@ defmodule RinhaBackend.MixProject do
 
       # Web Server
       {:plug_cowboy, "~> 2.0"},
-      {:bandit, "~> 1.0"}
+      {:bandit, "~> 1.0"},
+
+      # Metrics
+      {:prom_ex, "~> 1.9.0"},
+      {:telemetry_metrics, "~> 0.6"}
     ]
   end
 end

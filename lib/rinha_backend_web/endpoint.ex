@@ -7,6 +7,8 @@ defmodule RinhaBackendWeb.Endpoint do
   alias RinhaBackendWeb.Controller.ClientController
 
   plug(:match)
+  plug(PromEx.Plug, prom_ex_module: RinhaBackend.PromEx)
+  plug(Plug.Telemetry, event_prefix: [:rinha_backend, :bandit, :endpoint])
 
   plug(Plug.Parsers,
     parsers: [:json],
