@@ -5,9 +5,13 @@ defmodule RinhaBackend.Commands.GetClientEntries do
   alias RinhaBackend.Schemas.Entry
   alias RinhaBackend.Repo
 
+  @telemetry_execution_event ~w(rinha_backend domain execution)a
+
   @spec execute(non_neg_integer(), non_neg_integer()) ::
           {:ok, [Entry.t()]} | {:error, :unexpected}
   def execute(client_id, limit \\ 10) do
+    start = System.monotonic_time(:microsecond)
+
     ~s/
     SELECT amount
       , type
@@ -26,6 +30,17 @@ defmodule RinhaBackend.Commands.GetClientEntries do
       _error ->
         {:error, :unexpected}
     end
+    |> tap(fn _ ->
+      :telemetry.execute(
+        @telemetry_execution_event,
+        %{total_time: System.monotonic_time(:microsecond) - start},
+        %{
+          client_id: client_id,
+          name: :get_entries,
+          instance: Application.fetch_env!(:rinha_backend, :instance)
+        }
+      )
+    end)
   end
 
   defp render(rows) do

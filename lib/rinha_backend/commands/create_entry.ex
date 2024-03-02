@@ -34,7 +34,7 @@ defmodule RinhaBackend.Commands.CreateEntry do
     |> tap(fn _ ->
       :telemetry.execute(
         @telemetry_execution_event,
-        %{total_time: System.monotonic_time(:microsecond) - start, name: :create_entry},
+        %{total_time: System.monotonic_time(:microsecond) - start},
         %{
           client_id: entry.client_id,
           name: :create_entry,

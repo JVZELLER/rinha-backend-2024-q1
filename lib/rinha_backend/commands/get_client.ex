@@ -5,8 +5,12 @@ defmodule RinhaBackend.Commands.GetClient do
   alias RinhaBackend.Repo
   alias RinhaBackend.Schemas.Client
 
+  @telemetry_execution_event ~w(rinha_backend domain execution)a
+
   @spec execute(non_neg_integer()) :: {:ok, Client.t()} | {:error, :client_not_found}
   def execute(client_id) do
+    start = System.monotonic_time(:microsecond)
+
     ~s/
     SELECT balance
       , "limit"
@@ -23,5 +27,16 @@ defmodule RinhaBackend.Commands.GetClient do
       {:ok, %Postgrex.Result{rows: []}} ->
         {:error, :client_not_found}
     end
+    |> tap(fn _ ->
+      :telemetry.execute(
+        @telemetry_execution_event,
+        %{total_time: System.monotonic_time(:microsecond) - start},
+        %{
+          client_id: client_id,
+          name: :get_client,
+          instance: Application.fetch_env!(:rinha_backend, :instance)
+        }
+      )
+    end)
   end
 end
