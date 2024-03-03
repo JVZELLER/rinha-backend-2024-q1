@@ -15,10 +15,10 @@ services:
         - DATABASE_USER=admin
         - DATABASE_PASS=123
         - DATABASE_HOST=db
-        - DATABSE_POOL_SIZE=20
-        - ECTO_QUEUE_TARGET=5000
-        - ECTO_QUEUE_INTERVAL=5000
-        - ECTO_REPO_TIMEOUT=30000
+        - DATABSE_POOL_SIZE=25
+        - ECTO_QUEUE_TARGET=200
+        - ECTO_QUEUE_INTERVAL=1000
+        - ECTO_REPO_TIMEOUT=3000
         - APP_INSTANCE=API_01
       deploy:
         resources:
@@ -34,10 +34,10 @@ services:
         - DATABASE_USER=admin
         - DATABASE_PASS=123
         - DATABASE_HOST=db
-        - DATABSE_POOL_SIZE=20
-        - ECTO_QUEUE_TARGET=5000
-        - ECTO_QUEUE_INTERVAL=5000
-        - ECTO_REPO_TIMEOUT=30000
+        - DATABSE_POOL_SIZE=25
+        - ECTO_QUEUE_TARGET=200
+        - ECTO_QUEUE_INTERVAL=1000
+        - ECTO_REPO_TIMEOUT=3000
         - APP_INSTANCE=API_02
     ports:
       - 4001:4000
