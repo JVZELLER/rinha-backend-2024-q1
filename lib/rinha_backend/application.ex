@@ -10,7 +10,7 @@ defmodule RinhaBackend.Application do
     children = [
       RinhaBackend.PromEx,
       RinhaBackend.Repo,
-      {Bandit, plug: RinhaBackendWeb.Endpoint, port: 4000}
+      {DynamicSupervisor, strategy: :one_for_one, name: RinhaBackend.ClientRunner},
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
