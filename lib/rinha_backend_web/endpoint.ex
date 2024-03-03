@@ -27,6 +27,6 @@ defmodule RinhaBackendWeb.Endpoint do
   end
 
   match _ do
-    send_resp(conn, 404, "")
+    send_resp(conn, 404, "not_found")
   end
 end

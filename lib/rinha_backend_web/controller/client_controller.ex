@@ -5,9 +5,9 @@ defmodule RinhaBackendWeb.Controller.ClientController do
   import RinhaBackendWeb.JSONView
 
   alias Plug.Conn
-  alias RinhaBackend.Commands.CreateEntry
   alias RinhaBackend.Commands.GetClient
   alias RinhaBackend.Commands.GetClientEntries
+  alias RinhaBackend.GenServers.Executor
   alias RinhaBackend.Schemas.Entry
 
   @spec create_entry(Conn.t(), map()) :: Conn.t()
@@ -20,11 +20,9 @@ defmodule RinhaBackendWeb.Controller.ClientController do
       description: params["descricao"] || params[:descricao]
     }
 
-    # with {:client_id, {client_id, _}} when client_id > 0 <-
-    #        {:client_id, Integer.parse(client_id)},
     with translated_params = Map.put(translated_params, :client_id, client_id),
          {:ok, entry} <- Entry.new(translated_params),
-         {:ok, result} <- CreateEntry.execute(entry) do
+         {:ok, result} <- Executor.create_entry(client_id, entry) do
       conn
       |> Conn.put_resp_content_type("application/json")
       |> then(&Conn.send_resp(&1, 200, render!(:show, %{client: result})))

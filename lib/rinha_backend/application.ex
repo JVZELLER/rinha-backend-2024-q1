@@ -11,6 +11,8 @@ defmodule RinhaBackend.Application do
       RinhaBackend.PromEx,
       RinhaBackend.Repo,
       {DynamicSupervisor, strategy: :one_for_one, name: RinhaBackend.ClientRunner},
+      {Plug.Cowboy, scheme: :http, plug: RinhaBackendWeb.Endpoint, options: [port: 4000]}
+      # {Bandit, plug: RinhaBackendWeb.Endpoint, port: 4000}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
