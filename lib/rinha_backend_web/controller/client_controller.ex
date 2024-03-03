@@ -43,8 +43,6 @@ defmodule RinhaBackendWeb.Controller.ClientController do
 
   @spec statement(Conn.t(), map()) :: Conn.t()
   def statement(conn, %{"id" => client_id}) do
-    # with {:client_id, {client_id, _}} when client_id > 0 <-
-    #        {:client_id, Integer.parse(client_id)},
     with {:ok, client} <- GetClient.execute(client_id),
          {:ok, entries} <- GetClientEntries.execute(client_id) do
       conn
