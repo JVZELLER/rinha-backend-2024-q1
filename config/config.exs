@@ -4,6 +4,10 @@ config :rinha_backend, ecto_repos: [RinhaBackend.Repo]
 
 config :rinha_backend, RinhaBackend.Repo, parameters: [application_name: "rinha_backend"]
 
+config :rinha_backend, RinhaBackend.ReadRepo,
+  read_only: true,
+  parameters: [application_name: "rinha_backend_read"]
+
 # Configures Elixir's Logger
 config :logger, :console, format: "$time $metadata[$level] $message\n"
 

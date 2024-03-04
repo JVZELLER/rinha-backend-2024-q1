@@ -10,6 +10,7 @@ defmodule RinhaBackend.Application do
     children = [
       RinhaBackend.PromEx,
       RinhaBackend.Repo,
+      RinhaBackend.ReadRepo,
       {DynamicSupervisor, strategy: :one_for_one, name: RinhaBackend.ClientRunner},
       {Plug.Cowboy, scheme: :http, plug: RinhaBackendWeb.Endpoint, options: [port: 4000]}
       # {Bandit, plug: RinhaBackendWeb.Endpoint, port: 4000}

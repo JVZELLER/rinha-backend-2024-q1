@@ -3,7 +3,7 @@ defmodule RinhaBackend.Commands.GetClientEntries do
   Commando for getting client's entries
   """
   alias RinhaBackend.Schemas.Entry
-  alias RinhaBackend.Repo
+  alias RinhaBackend.ReadRepo
 
   @telemetry_execution_event ~w(rinha_backend domain execution)a
 
@@ -22,7 +22,7 @@ defmodule RinhaBackend.Commands.GetClientEntries do
     order by inserted_at desc
     limit #{limit};
     /
-    |> Repo.query()
+    |> ReadRepo.query()
     |> case do
       {:ok, %Postgrex.Result{rows: rows}} ->
         {:ok, render(rows)}

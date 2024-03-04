@@ -2,7 +2,7 @@ defmodule RinhaBackend.Commands.GetClient do
   @moduledoc """
   Command for getting current client's balance and limit
   """
-  alias RinhaBackend.Repo
+  alias RinhaBackend.ReadRepo
   alias RinhaBackend.Schemas.Client
 
   @telemetry_execution_event ~w(rinha_backend domain execution)a
@@ -17,7 +17,7 @@ defmodule RinhaBackend.Commands.GetClient do
     FROM clients
     WHERE id = #{client_id};
     /
-    |> Repo.query()
+    |> ReadRepo.query()
     |> case do
       {:ok, %Postgrex.Result{rows: [_ | _] = rows}} ->
         [balance, limit] = List.flatten(rows)

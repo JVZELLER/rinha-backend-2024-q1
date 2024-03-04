@@ -15,16 +15,16 @@ services:
         - DATABASE_USER=admin
         - DATABASE_PASS=123
         - DATABASE_HOST=db
-        - DATABSE_POOL_SIZE=25
-        - ECTO_QUEUE_TARGET=200
+        - DATABSE_POOL_SIZE=12
+        - ECTO_QUEUE_TARGET=100
         - ECTO_QUEUE_INTERVAL=1000
-        - ECTO_REPO_TIMEOUT=3000
+        - ECTO_REPO_TIMEOUT=5000
         - APP_INSTANCE=API_01
       deploy:
         resources:
           limits:
             cpus: "0.55"
-            memory: "100MB"
+            memory: "120MB"
     
   api02:
     <<: *api
@@ -34,10 +34,10 @@ services:
         - DATABASE_USER=admin
         - DATABASE_PASS=123
         - DATABASE_HOST=db
-        - DATABSE_POOL_SIZE=25
-        - ECTO_QUEUE_TARGET=200
+        - DATABSE_POOL_SIZE=12
+        - ECTO_QUEUE_TARGET=100
         - ECTO_QUEUE_INTERVAL=1000
-        - ECTO_REPO_TIMEOUT=3000
+        - ECTO_REPO_TIMEOUT=5000
         - APP_INSTANCE=API_02
     ports:
       - 4001:4000
@@ -61,7 +61,7 @@ services:
 
   db:
       image: postgres:16.1-alpine
-      command: -c max_connections=200 -c checkpoint_timeout=600 -c max_wal_size=4096 -c synchronous_commit=0 -c full_page_writes=0
+      command: -c checkpoint_timeout=600 -c max_wal_size=4096 -c synchronous_commit=0 -c full_page_writes=0
       hostname: db
       restart: on-failure
       networks:
@@ -83,7 +83,7 @@ services:
         resources:
           limits:
             cpus: "0.25"
-            memory: "340MB"
+            memory: "300MB"
 
 
 
