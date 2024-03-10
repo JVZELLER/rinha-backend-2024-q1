@@ -3,7 +3,7 @@ defmodule RinhaBackend.GenServers.BackPressure do
 
   use GenServer
 
-  alias RinhaBackend.ClientRunner
+  alias RinhaBackend.BackPressureSupervisor
 
   @initial_state %{count: 0, batch: []}
 
@@ -64,7 +64,7 @@ defmodule RinhaBackend.GenServers.BackPressure do
     :"client_#{client_id}"
     |> GenServer.whereis()
     |> case do
-      nil -> DynamicSupervisor.start_child(ClientRunner, {__MODULE__, [id: client_id]})
+      nil -> DynamicSupervisor.start_child(BackPressureSupervisor, {__MODULE__, [id: client_id]})
       pid -> {:ok, pid}
     end
     |> case do

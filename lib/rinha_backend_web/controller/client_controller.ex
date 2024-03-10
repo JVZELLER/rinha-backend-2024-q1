@@ -5,9 +5,9 @@ defmodule RinhaBackendWeb.Controller.ClientController do
   import RinhaBackendWeb.JSONView
 
   alias Plug.Conn
+  alias RinhaBackend.Commands.CreateEntry
   alias RinhaBackend.Commands.GetClientEntries
   alias RinhaBackend.GenServers.BackPressure
-  alias RinhaBackend.GenServers.Executor
   alias RinhaBackend.Schemas.Entry
 
   @spec create_entry(Conn.t(), map()) :: Conn.t()
@@ -66,7 +66,7 @@ defmodule RinhaBackendWeb.Controller.ClientController do
     if back_pressure_enabled?() do
       BackPressure.execute(client_id, entry)
     else
-      Executor.create_entry(client_id, entry)
+      CreateEntry.execute(entry)
     end
   end
 
