@@ -2,52 +2,31 @@ defmodule RinhaBackend.Commands.GetClientEntries do
   @moduledoc """
   Commando for getting client's entries
   """
+  import Ecto.Query
+
+  alias RinhaBackend.Schemas.Client
   alias RinhaBackend.Schemas.Entry
   alias RinhaBackend.ReadRepo
 
-  @telemetry_execution_event ~w(rinha_backend domain execution)a
-
   @spec execute(non_neg_integer(), non_neg_integer()) ::
-          {:ok, [Entry.t()]} | {:error, :unexpected}
+          {:ok, Client.t()} | {:error, :client_not_found}
   def execute(client_id, limit \\ 10) do
-    start = System.monotonic_time(:microsecond)
+    entries_query =
+      Entry
+      |> where(client_id: type(^client_id, :integer))
+      |> limit(^limit)
+      |> order_by(desc: :inserted_at)
 
-    ~s/
-    SELECT amount
-      , type
-      , description
-      , inserted_at
-    FROM entries
-    where client_id = #{client_id}
-    order by inserted_at desc
-    limit #{limit};
-    /
-    |> ReadRepo.query()
+    Client
+    |> where(id: type(^client_id, :integer))
+    |> preload(entries: ^entries_query)
+    |> ReadRepo.one()
     |> case do
-      {:ok, %Postgrex.Result{rows: rows}} ->
-        {:ok, render(rows)}
+      nil ->
+        {:error, :client_not_found}
 
-      _error ->
-        {:error, :unexpected}
+      client ->
+        {:ok, client}
     end
-    |> tap(fn _ ->
-      :telemetry.execute(
-        @telemetry_execution_event,
-        %{total_time: System.monotonic_time(:microsecond) - start},
-        %{
-          client_id: client_id,
-          name: :get_entries,
-          instance: Application.fetch_env!(:rinha_backend, :instance)
-        }
-      )
-    end)
-  end
-
-  defp render(rows) do
-    Enum.map(rows, fn [amount, type, desc, inserted_at] ->
-      params = %{amount: amount, type: type, description: desc, inserted_at: inserted_at}
-
-      struct(Entry, params)
-    end)
   end
 end

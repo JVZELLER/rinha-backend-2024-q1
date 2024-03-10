@@ -6,14 +6,14 @@ defmodule RinhaBackend.GenServers.Executor do
   """
   use GenServer
 
-  alias RinhaBackend.ClientRunner
+  # alias RinhaBackend.ClientRunner
   alias RinhaBackend.Commands.CreateEntry
 
   @spec start_link(keyword()) :: GenServer.on_start()
   def start_link(args) do
-    {:ok, client_id} = Keyword.fetch(args, :id)
+    {:ok, id} = Keyword.fetch(args, :client_id)
 
-    GenServer.start_link(__MODULE__, args, name: :"client_#{client_id}")
+    GenServer.start_link(__MODULE__, args, name: :"client_#{id}")
   end
 
   @impl true
@@ -25,27 +25,39 @@ defmodule RinhaBackend.GenServers.Executor do
   ## Client ##
   ############
 
-  def create_entry(client_id, args) do
-    start_client_server(client_id)
-    GenServer.call(:"client_#{client_id}", {:create_entry, args})
-  end
+  def create_entry(_client_id, args) do
+    # start_client_server(client_id)
+    concurrency = Application.get_env(:rinha_backend, :concurrency, 5)
+    client_id = Enum.random(1..concurrency)
+    GenServer.cast(:"client_#{client_id}", {:create_entry, self(), args})
 
-  defp start_client_server(client_id) do
-    :"client_#{client_id}"
-    |> Process.whereis()
-    |> case do
-      nil -> DynamicSupervisor.start_child(ClientRunner, {__MODULE__, [id: client_id]})
-      _ -> :ok
+    receive do
+      {:result, result} ->
+        result
+    after
+      :timer.seconds(5) ->
+        {:error, "timeout"}
     end
   end
+
+  # defp start_client_server(client_id) do
+  #   :"client_#{client_id}"
+  #   |> Process.whereis()
+  #   |> case do
+  #     nil -> DynamicSupervisor.start_child(ClientRunner, {__MODULE__, [id: client_id]})
+  #     _ -> :ok
+  #   end
+  # end
 
   ############
   ## Server ##
   ############
 
   @impl true
-  def handle_call({:create_entry, args}, _from, _state) do
+  def handle_cast({:create_entry, from, args}, _state) do
     result = CreateEntry.execute(args)
-    {:reply, result, result}
+
+    send(from, {:result, result})
+    {:noreply, result}
   end
 end

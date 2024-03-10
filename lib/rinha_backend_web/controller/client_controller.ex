@@ -5,8 +5,8 @@ defmodule RinhaBackendWeb.Controller.ClientController do
   import RinhaBackendWeb.JSONView
 
   alias Plug.Conn
-  alias RinhaBackend.Commands.GetClient
   alias RinhaBackend.Commands.GetClientEntries
+  alias RinhaBackend.GenServers.BackPressure
   alias RinhaBackend.GenServers.Executor
   alias RinhaBackend.Schemas.Entry
 
@@ -22,11 +22,14 @@ defmodule RinhaBackendWeb.Controller.ClientController do
 
     with translated_params = Map.put(translated_params, :client_id, client_id),
          {:ok, entry} <- Entry.new(translated_params),
-         {:ok, result} <- Executor.create_entry(client_id, entry) do
+         {:ok, result} <- do_create_entry(client_id, entry) do
       conn
       |> Conn.put_resp_content_type("application/json")
-      |> then(&Conn.send_resp(&1, 200, render!(:show, %{client: result})))
+      |> Conn.send_resp(200, render!(:show, %{client: result}))
     else
+      {:error, :timeout} ->
+        Conn.send_resp(conn, 503, "service_unavailable")
+
       {:client_id, _error} ->
         Conn.send_resp(conn, 400, "invalid_path_parameter")
 
@@ -43,20 +46,30 @@ defmodule RinhaBackendWeb.Controller.ClientController do
 
   @spec statement(Conn.t(), map()) :: Conn.t()
   def statement(conn, %{"id" => client_id}) do
-    with {:ok, client} <- GetClient.execute(client_id),
-         {:ok, entries} <- GetClientEntries.execute(client_id) do
-      conn
-      |> Conn.put_resp_content_type("application/json")
-      |> then(&Conn.send_resp(&1, 200, render!(:statement, %{client: client, entries: entries})))
-    else
+    client_id
+    |> GetClientEntries.execute()
+    |> case do
+      {:ok, statement} ->
+        conn
+        |> Conn.put_resp_content_type("application/json")
+        |> Conn.send_resp(200, render!(:statement, %{statement: statement}))
+
       {:client_id, _error} ->
         Conn.send_resp(conn, 400, "invalid_path_parameter")
 
       {:error, :client_not_found} ->
         Conn.send_resp(conn, 404, "")
-
-      {:error, :unexpected} ->
-        Conn.send_resp(conn, 500, "")
     end
   end
+
+  defp do_create_entry(client_id, entry) do
+    if back_pressure_enabled?() do
+      BackPressure.execute(client_id, entry)
+    else
+      Executor.create_entry(client_id, entry)
+    end
+  end
+
+  defp back_pressure_enabled?,
+    do: :rinha_backend |> Application.fetch_env!(:back_pressure) |> Keyword.fetch!(:enabled?)
 end

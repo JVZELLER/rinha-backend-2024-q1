@@ -12,23 +12,23 @@ defmodule RinhaBackendWeb.JSONView do
     |> Jason.encode!()
   end
 
-  def render!(:statement, %{client: client, entries: entries}) do
+  def render!(:statement, %{statement: statement}) do
     now = NaiveDateTime.utc_now()
 
     %{
       saldo: %{
-        total: client.balance,
+        total: statement.balance,
         data_extrato: now,
-        limite: client.limit
+        limite: statement.limit
       },
-      ultimas_transacoes: Enum.map(entries, &render_statement_entries/1)
+      ultimas_transacoes: Enum.map(statement.entries, &render_statement_entries/1)
     }
     |> Jason.encode!()
   end
 
   defp render_statement_entries(entry) do
     %{
-      valor: abs(entry.amount),
+      valor: entry.amount,
       tipo: entry.type,
       descricao: entry.description,
       realizada_em: entry.inserted_at

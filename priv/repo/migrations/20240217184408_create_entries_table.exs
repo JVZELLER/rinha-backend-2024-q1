@@ -2,7 +2,7 @@ defmodule RinhaBackend.Repo.Migrations.CreateEntriesTable do
   use Ecto.Migration
 
   def change do
-    create table("entries") do
+    create table("entries", primary_key: false) do
       add(:amount, :bigint)
       add(:type, :string)
       add(:description, :string)

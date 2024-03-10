@@ -2,20 +2,29 @@ defmodule RinhaBackend.Schemas.Client do
   @moduledoc """
   Represents the schema we use to store clients' data
   """
-  defstruct ~w(id balance limit inserted_at updated_at)a
+  use Ecto.Schema
 
-  @type t :: %__MODULE__{
-          id: integer(),
-          balance: integer(),
-          limit: integer(),
-          inserted_at: NaiveDateTime.t(),
-          updated_at: NaiveDateTime.t()
-        }
+  import Ecto.Changeset
 
-  # TODO: validate args and return {:error, :invalid_args}
-  # in case of error
-  @spec new(map()) :: t()
-  def new(params) do
-    struct(__MODULE__, params)
+  alias RinhaBackend.Schemas.Entry
+
+  @type t :: %__MODULE__{}
+
+  @required ~w(balance limit)a
+
+  schema "clients" do
+    field(:balance, :integer)
+    field(:limit, :integer)
+
+    has_many(:entries, Entry, references: :id)
+
+    timestamps()
+  end
+
+  @doc false
+  def changeset(schema \\ %__MODULE__{}, params) do
+    schema
+    |> cast(params, @required)
+    |> validate_required(@required)
   end
 end

@@ -7,14 +7,12 @@ CREATE TABLE "clients" (
     PRIMARY KEY ("id")
 );
 CREATE TABLE "entries" (
-    "id" bigserial,
     "amount" bigint,
     "type" varchar(255),
     "description" varchar(255),
     "client_id" bigint,
     CONSTRAINT "entries_client_id_fkey" FOREIGN KEY ("client_id") REFERENCES "clients"("id"),
-    "inserted_at" timestamp NOT NULL,
-    PRIMARY KEY ("id")
+    "inserted_at" timestamp NOT NULL
 );
 CREATE INDEX entries_client_id_inserted_at_index ON public.entries USING btree (client_id, inserted_at);
 CREATE OR REPLACE FUNCTION fn_insert_entry(
@@ -38,8 +36,7 @@ SELECT balance,
 FROM updated_client_data INTO client_balance,
     client_limit;
 -- Check if client exists
-IF client_balance IS NULL
-OR client_limit IS NULL THEN RAISE EXCEPTION 'client_not_found';
+IF client_balance IS NULL THEN RAISE EXCEPTION 'client_not_found';
 END IF;
 -- Check client has invalid balance
 IF client_limit * -1 > client_balance THEN RAISE EXCEPTION 'entry_amount_exceeds_client_limit';
@@ -53,7 +50,7 @@ INSERT INTO entries (
         inserted_at
     )
 VALUES (
-        entry_amount,
+        abs(entry_amount),
         entry_type,
         entry_description,
         client_id,

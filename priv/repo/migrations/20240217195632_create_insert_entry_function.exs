@@ -27,7 +27,7 @@ defmodule RinhaBackend.Repo.Migrations.CreateInsertEntryFunction do
 
 
           -- Check if client exists
-          IF client_balance IS NULL OR client_limit IS NULL THEN
+          IF client_balance IS NULL THEN
             RAISE EXCEPTION 'client_not_found';
           END IF;
 
@@ -37,7 +37,7 @@ defmodule RinhaBackend.Repo.Migrations.CreateInsertEntryFunction do
           END IF;
 
           -- Insert entry
-          INSERT INTO entries (amount, type, description, client_id, inserted_at) VALUES (entry_amount, entry_type, entry_description, client_id, now());
+          INSERT INTO entries (amount, type, description, client_id, inserted_at) VALUES (abs(entry_amount), entry_type, entry_description, client_id, now());
 
           -- Return client balance and limit as JSONB
           RETURN jsonb_build_object('limit', client_limit, 'balance', client_balance);

@@ -5,21 +5,19 @@ defmodule RinhaBackend.Commands.CreateEntry do
   alias RinhaBackend.Repo
   alias RinhaBackend.Schemas.Entry
 
-  @telemetry_execution_event ~w(rinha_backend domain execution)a
-
   @spec execute(Entry.t()) ::
           {:ok, map()}
           | {:error, :client_not_found}
           | {:error, :entry_amount_exceeds_client_limit}
   def execute(entry) do
-    start = System.monotonic_time(:microsecond)
+    amount = if(entry.type == "d", do: entry.amount * -1, else: entry.amount)
 
     "select fn_insert_entry($1, $2, $3, $4)"
     |> Repo.query([
-      entry.amount,
+      amount,
       entry.type,
       entry.description,
-      String.to_integer(entry.client_id)
+      entry.client_id
     ])
     |> case do
       {:ok, %Postgrex.Result{rows: rows}} ->
@@ -31,16 +29,5 @@ defmodule RinhaBackend.Commands.CreateEntry do
       {:error, %Postgrex.Error{postgres: %{message: "entry_amount_exceeds_client_limit"}}} ->
         {:error, :entry_amount_exceeds_client_limit}
     end
-    |> tap(fn _ ->
-      :telemetry.execute(
-        @telemetry_execution_event,
-        %{total_time: System.monotonic_time(:microsecond) - start},
-        %{
-          client_id: entry.client_id,
-          name: :create_entry,
-          instance: Application.fetch_env!(:rinha_backend, :instance)
-        }
-      )
-    end)
   end
 end

@@ -4,10 +4,15 @@ defaults = %{
   "DATABASE_PASS" => "123",
   "DATABASE_HOST" => "localhost",
   "DATABSE_POOL_SIZE" => "5",
+  "READ_DATABSE_POOL_SIZE" => "5",
   "ECTO_QUEUE_TARGET" => "5000",
   "ECTO_QUEUE_INTERVAL" => "5000",
   "ECTO_REPO_TIMEOUT" => "30000",
-  "APP_INSTANCE" => "localhost"
+  "APP_INSTANCE" => "localhost",
+  "BACK_PRESSURE" => "true",
+  "CONCURRENCY" => "1",
+  "TIMEOUT_IN_SECONDS" => "4",
+  "DISPATCH_TIMEOUT_IN_MS" => "200"
 }
 
 set_default_env = fn {name, value} ->

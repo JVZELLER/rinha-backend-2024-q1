@@ -2,37 +2,54 @@ defmodule RinhaBackend.Schemas.Entry do
   @moduledoc """
   Represents the client's transactions
   """
-  defstruct ~w(id amount type description client_id inserted_at)a
+  use Ecto.Schema
 
-  defguard valid_type(t) when t in ~w(c d C D)
+  import Ecto.Changeset
 
-  defguard valid_description(description) when byte_size(description) <= 10 and description != ""
+  alias Ecto.Changeset
 
-  @valid_fields ~w(id amount type description client_id inserted_at)a
+  @type t :: %__MODULE__{}
 
-  @type t :: %__MODULE__{
-          id: non_neg_integer(),
-          amount: integer(),
-          type: String.t(),
-          description: String.t(),
-          client_id: non_neg_integer() | Strint.t(),
-          inserted_at: NaiveDateTime.t()
-        }
+  @required ~w(amount type description client_id)a
 
-  @spec new(map()) :: {:ok, t()} | {:error, :invalid_args}
-  def new(%{amount: amount, type: type, description: desc, client_id: client_id} = params)
-      when is_integer(amount) and
-             amount > 0 and
-             valid_type(type) and
-             valid_description(desc) and
-             (is_integer(client_id) or is_binary(client_id)) do
-    amount = if(type == "d", do: -amount, else: amount)
+  @primary_key false
+  schema "entries" do
+    field(:amount, :integer)
+    field(:type, :string)
+    field(:description, :string)
+    field(:client_id, :integer)
 
-    params
-    |> Map.take(@valid_fields)
-    |> then(&struct(__MODULE__, %{&1 | amount: amount}))
-    |> then(&{:ok, &1})
+    timestamps(updated_at: false)
   end
 
-  def new(_invalid), do: {:error, :invalid_args}
+  @doc false
+  def changeset(schema \\ %__MODULE__{}, params) do
+    params = downcase_type(params)
+
+    schema
+    |> cast(params, @required)
+    |> validate_required(@required)
+    |> validate_number(:amount, greater_than: 0)
+    |> validate_length(:description, min: 1, max: 10)
+    |> validate_inclusion(:type, ~w(d c))
+  end
+
+  @spec new(map()) :: {:ok, t()} | {:error, :invalid_args}
+  def new(params) do
+    params
+    |> changeset()
+    |> case do
+      %Changeset{valid?: true} = changes ->
+        {:ok, Changeset.apply_changes(changes)}
+
+      _ ->
+        {:error, :invalid_args}
+    end
+  end
+
+  defp downcase_type(params) do
+    type = params["type"] || params[:type] || ""
+
+    Map.put(params, :type, String.downcase(type))
+  end
 end
